@@ -12,17 +12,17 @@ const getSystemInstruction = (lang: Language): string => {
 // This function now handles the direct API call
 export const getBotResponse = async (prompt: string, lang: Language): Promise<string> => {
   try {
-    // API key is securely provided by the execution environment
+    // The API key MUST be provided by the execution environment.
+    // The hosting platform (like AI Studio) is responsible for injecting it.
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      console.error("API_KEY is not set in the environment variables.");
-      throw new Error("API key not configured.");
+      console.error("API_KEY environment variable is not set. The application cannot contact the AI service.");
+      // This error will be shown to the user in the chat window.
+      throw new Error("API key is not configured. Please contact the administrator.");
     }
 
-    // Initialize the Gemini AI client for each request to ensure the latest key is used
     const ai = new GoogleGenAI({ apiKey });
     
-    // Call the Gemini API directly from the client-side
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
@@ -31,10 +31,22 @@ export const getBotResponse = async (prompt: string, lang: Language): Promise<st
         }
     });
 
-    return response.text;
+    const text = response.text;
+    
+    // Defensive check to ensure we received a valid text response.
+    if (typeof text !== 'string' || text.trim() === '') {
+        console.warn("Received an empty or invalid response from Gemini API:", response);
+        // Fallback message in the correct language.
+        return lang === 'fa' 
+            ? 'متاسفانه نتوانستم پاسخ مناسبی پیدا کنم. لطفاً سوال خود را به شکل دیگری بپرسید.'
+            : 'Sorry, I couldn\'t find a suitable response. Please try asking in a different way.';
+    }
+
+    return text;
     
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    throw new Error("Failed to get response from AI");
+    console.error("An error occurred while calling the Gemini API:", error);
+    // Re-throwing the error ensures the UI can catch it and display a generic error message.
+    throw new Error("Failed to get response from the AI model.");
   }
 };
