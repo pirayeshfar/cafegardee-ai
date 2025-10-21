@@ -16,7 +16,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLangua
   return (
     <div
       onClick={toggleLanguage}
-      className="relative flex items-center w-[72px] h-9 p-1 bg-stone-200 dark:bg-stone-800 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"
+      className="flex items-center justify-around w-[72px] h-9 px-2 bg-stone-200 dark:bg-stone-800 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"
       role="switch"
       aria-checked={!isEnglish}
       tabIndex={0}
@@ -28,19 +28,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLangua
       }}
       aria-label={`Switch to ${isEnglish ? 'Persian' : 'English'}`}
     >
-      <span
-        aria-hidden="true"
-        className="absolute h-7 w-7 bg-amber-500 rounded-full shadow-md transition-[right] duration-300 ease-in-out"
-        style={{ right: isEnglish ? 'calc(72px - 28px - 2px)' : '2px' }}
-      />
-      <div className="flex justify-around w-full">
-        <span className={`relative z-10 text-xs font-bold transition-colors duration-300 ${isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}>
-          EN
-        </span>
-        <span className={`relative z-10 text-xs font-bold transition-colors duration-300 ${!isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}>
-          FA
-        </span>
-      </div>
+      <span className={`text-sm font-bold transition-colors duration-300 ${isEnglish ? 'text-stone-800 dark:text-stone-100' : 'text-stone-500 dark:text-stone-400'}`}>
+        EN
+      </span>
+      <span className={`text-sm font-bold transition-colors duration-300 ${!isEnglish ? 'text-stone-800 dark:text-stone-100' : 'text-stone-500 dark:text-stone-400'}`}>
+        FA
+      </span>
     </div>
   );
 };
