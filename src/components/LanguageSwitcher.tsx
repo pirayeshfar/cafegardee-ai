@@ -9,31 +9,31 @@ interface LanguageSwitcherProps {
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLanguage }) => {
   const isEnglish = language === 'en';
 
-  const toggleLanguage = () => {
-    setLanguage(isEnglish ? 'fa' : 'en');
-  };
-
   return (
-    <div
-      onClick={toggleLanguage}
-      className="flex items-center justify-around w-[72px] h-9 px-2 bg-stone-200 dark:bg-stone-800 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"
-      role="switch"
-      aria-checked={!isEnglish}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleLanguage();
-        }
-      }}
-      aria-label={`Switch to ${isEnglish ? 'Persian' : 'English'}`}
-    >
-      <span className={`text-sm font-bold transition-colors duration-300 ${isEnglish ? 'text-stone-800 dark:text-stone-100' : 'text-stone-500 dark:text-stone-400'}`}>
+    <div className="relative flex w-[74px] h-9 items-center rounded-full bg-stone-200 dark:bg-stone-800 p-1">
+      <span
+        className="absolute h-7 w-[34px] rounded-full bg-amber-500 shadow-md transition-transform duration-300 ease-in-out"
+        style={{
+          transform: isEnglish ? 'translateX(0px)' : 'translateX(36px)',
+        }}
+      />
+      
+      <button
+        onClick={() => setLanguage('en')}
+        className={`z-10 flex-1 text-sm font-bold transition-colors duration-300 ${isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}
+        aria-pressed={isEnglish}
+        aria-label="Switch to English"
+      >
         EN
-      </span>
-      <span className={`text-sm font-bold transition-colors duration-300 ${!isEnglish ? 'text-stone-800 dark:text-stone-100' : 'text-stone-500 dark:text-stone-400'}`}>
+      </button>
+      <button
+        onClick={() => setLanguage('fa')}
+        className={`z-10 flex-1 text-sm font-bold transition-colors duration-300 ${!isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}
+        aria-pressed={!isEnglish}
+        aria-label="Switch to Persian"
+      >
         FA
-      </span>
+      </button>
     </div>
   );
 };
