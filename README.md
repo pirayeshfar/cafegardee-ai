@@ -20,15 +20,14 @@ Welcome to Cafegardee AI, your personal AI guide to the world of flavors! This a
 
 ## 🏗️ Project Architecture
 
-This project is a modern single-page application (SPA).
+This project is a modern single-page application (SPA). All application logic resides on the client-side within the `/src` directory.
 
--   **Frontend (`/src`):** A static React application that provides the user interface. All application source code resides in the `src` directory.
-    -   `src/components/`: Reusable React components like the `Header`, `Chatbot`, and `LanguageSwitcher`.
-    -   `src/hooks/useChat.ts`: A custom hook to manage the chat state, including messages, loading status, and communication with the Gemini API.
-    -   `src/services/geminiService.ts`: A service layer that encapsulates the logic for calling the Google Gemini API. It includes language-specific system instructions to tailor the AI's personality.
-    -   `src/lib/i18n.ts`: A simple internationalization utility for handling English and Persian translations.
+-   **`src/components/`**: Reusable React components that make up the UI.
+-   **`src/hooks/useChat.ts`**: A custom hook that manages the chat state, including messages, loading status, and communication with the Gemini API service.
+-   **`src/services/geminiService.ts`**: This service handles all communication with the Google Gemini API. It constructs the requests, includes language-specific system instructions to tailor the AI's personality, and processes the responses.
+-   **`src/lib/i18n.ts`**: A simple internationalization utility for handling English and Persian translations.
 
-The Google Gemini API is called directly from the frontend. The `API_KEY` is expected to be provided as an environment variable in the execution environment, ensuring it's not hardcoded in the source code.
+The Google Gemini API is called directly from the frontend. The `API_KEY` is expected to be provided as an environment variable by the platform where the app is running, ensuring it is not exposed in the client-side code.
 
 ## 🚀 Deployment
 
@@ -36,6 +35,6 @@ This application can be deployed to any static site hosting service.
 
 1.  Fork this repository.
 2.  Connect your repository to a hosting provider like Vercel or Netlify.
-3.  Add your Google Gemini API key as an environment variable named `API_KEY`.
+3.  Set your Google Gemini API key as an environment variable named `API_KEY` in your hosting provider's settings.
 4.  Configure the build command (`npm run build` or `vite build`) and the output directory (`dist`).
 5.  Deploy!
