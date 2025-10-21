@@ -84,14 +84,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   if (!isChatActive) {
       return (
         <div className="w-full max-w-2xl text-center cursor-pointer" onClick={() => setIsChatActive(true)}>
-            <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500">
                 {t('welcomeTitle', language)}
             </h1>
-            <p className="text-stone-600 dark:text-stone-400 mb-8">{t('welcomeSubtitle', language)}</p>
+            <p className="text-stone-600 dark:text-stone-400 mb-8 md:text-lg">{t('welcomeSubtitle', language)}</p>
              <div className="relative w-full">
                 <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-5 -translate-y-1/2 text-stone-400 rtl:left-auto rtl:right-5"></i>
                 <div
-                    className="w-full text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-shadow text-stone-500 text-left rtl:text-right"
+                    className="w-full text-base md:text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-shadow text-stone-500 text-left rtl:text-right"
                 >
                     {t('placeholder', language)}
                 </div>
@@ -102,7 +102,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
 
   return (
     <div className="flex flex-col h-full w-full max-w-4xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl overflow-hidden">
-      <div ref={messagesEndRef} className="flex-1 overflow-y-auto p-6">
+      <div ref={messagesEndRef} className="flex-1 overflow-y-auto p-4 sm:p-6">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
         ))}

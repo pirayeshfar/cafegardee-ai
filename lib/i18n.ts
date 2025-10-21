@@ -2,9 +2,9 @@ import type { Language } from '../types';
 
 const translations = {
   en: {
-    appTitle: 'Cafegardee',
+    appTitle: 'Cafégardee',
     placeholder: 'Find cafes, restaurants, or recipes...',
-    welcomeTitle: 'Welcome to Cafegardee',
+    welcomeTitle: 'Welcome to Cafégardee',
     welcomeSubtitle: 'Your AI guide to the world of flavors. Ask me anything about cafes, restaurants, or drink recipes!',
     findNearMe: 'Find places near me',
     findingLocation: 'Finding your location...',

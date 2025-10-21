@@ -8,25 +8,41 @@ interface LanguageSwitcherProps {
 }
 
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLanguage }) => {
+  const isEnglish = language === 'en';
+
   const toggleLanguage = () => {
-    const newLanguage = language === 'en' ? 'fa' : 'en';
-    setLanguage(newLanguage);
+    setLanguage(isEnglish ? 'fa' : 'en');
   };
 
   return (
-    <button
+    <div
       onClick={toggleLanguage}
-      className="flex items-center justify-center w-24 h-10 px-3 bg-stone-200 dark:bg-stone-800 rounded-full text-sm font-semibold text-stone-700 dark:text-stone-300 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-stone-900"
-      aria-label={`Switch to ${language === 'en' ? 'Persian' : 'English'}`}
+      className="relative flex items-center w-[72px] h-9 p-1 bg-stone-200 dark:bg-stone-800 rounded-full cursor-pointer transition-colors duration-300 ease-in-out"
+      role="switch"
+      aria-checked={!isEnglish}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleLanguage();
+        }
+      }}
+      aria-label={`Switch to ${isEnglish ? 'Persian' : 'English'}`}
     >
-      <span className={`transition-transform duration-300 ${language === 'en' ? 'translate-x-0' : 'translate-x-full'}`}>
-        {language === 'en' ? 'EN' : 'FA'}
-      </span>
-      <span className="mx-2 text-stone-400 dark:text-stone-600">|</span>
-      <span className={`transition-transform duration-300 ${language === 'en' ? '-translate-x-full' : 'translate-x-0'}`}>
-        {language === 'en' ? 'FA' : 'EN'}
-      </span>
-    </button>
+      <span
+        aria-hidden="true"
+        className="absolute h-7 w-7 bg-amber-500 rounded-full shadow-md transition-transform duration-300 ease-in-out"
+        style={{ transform: isEnglish ? 'translateX(2px)' : 'translateX(34px)' }}
+      />
+      <div className="flex justify-around w-full">
+        <span className={`relative z-10 text-xs font-bold transition-colors duration-300 ${isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}>
+          EN
+        </span>
+        <span className={`relative z-10 text-xs font-bold transition-colors duration-300 ${!isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}>
+          FA
+        </span>
+      </div>
+    </div>
   );
 };
 
