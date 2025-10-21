@@ -1,7 +1,5 @@
 # Cafegardee AI ☕️
 
-![Cafegardee Logo](logo.png)
-
 Welcome to Cafegardee AI, your personal AI guide to the world of flavors! This application is designed to help users discover cafes and restaurants, find recipes for coffee, tea, and other beverages, and get location-based recommendations, all through a seamless, bilingual chat interface powered by Google's Gemini API.
 
 ## ✨ Features
