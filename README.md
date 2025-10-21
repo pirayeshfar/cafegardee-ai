@@ -21,11 +21,11 @@ Welcome to Cafegardee AI, your personal AI guide to the world of flavors! This a
 
 This project is a modern single-page application (SPA) with a serverless backend component.
 
-1.  **Frontend (`/`):** A static React application that provides the user interface.
-    -   `components/`: Reusable React components like the `Header`, `Chatbot`, and `LanguageSwitcher`.
-    -   `hooks/useChat.ts`: A custom hook to manage the chat state, including messages, loading status, and communication with the backend.
-    -   `services/geminiService.ts`: A service layer that abstracts the API call to our own backend endpoint.
-    -   `lib/i18n.ts`: A simple internationalization utility for handling English and Persian translations.
+1.  **Frontend (`/src`):** A static React application that provides the user interface. All application source code resides in the `src` directory.
+    -   `src/components/`: Reusable React components like the `Header`, `Chatbot`, and `LanguageSwitcher`.
+    -   `src/hooks/useChat.ts`: A custom hook to manage the chat state, including messages, loading status, and communication with the backend.
+    -   `src/services/geminiService.ts`: A service layer that abstracts the API call to our own backend endpoint.
+    -   `src/lib/i18n.ts`: A simple internationalization utility for handling English and Persian translations.
 
 2.  **Backend (`/api/generate.ts`):** A Vercel Serverless Function that acts as a secure proxy to the Google Gemini API.
     -   It receives the user's prompt and selected language from the frontend.
