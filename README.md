@@ -8,38 +8,34 @@ Welcome to Cafegardee AI, your personal AI guide to the world of flavors! This a
 - **🌍 Bilingual Support:** The entire UI and chatbot experience are available in both **English** and **Persian (Farsi)**, with easy language switching.
 - **📍 Geolocation:** Users can request recommendations for cafes and restaurants nearby, utilizing their device's location.
 - **🎨 Responsive & Modern UI:** Built with Tailwind CSS, the interface is clean, responsive, and works beautifully on all devices, featuring a dark mode.
-- **🔒 Secure API Calls:** The Gemini API key is kept secure on the backend using a Vercel Serverless Function, preventing exposure on the client-side.
-- **🚀 Zero-Config Deployment:** Deploys effortlessly on Vercel, leveraging serverless functions for the backend logic.
+- **🚀 Direct AI Integration:** The application communicates directly with the Google Gemini API from the client-side. The API key is securely managed by the execution environment.
+- **⚡️ Vite-Powered:** Fast development and optimized builds thanks to Vite.
 
 ## 🛠 Tech Stack
 
 - **Frontend:** [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/)
 - **AI Model:** [Google Gemini API](https://ai.google.dev/) (`@google/genai` SDK)
-- **Deployment & Backend:** [Vercel](https://vercel.com/) (Serverless Functions)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Deployment:** Any static hosting provider (e.g., Vercel, Netlify, GitHub Pages).
 
 ## 🏗️ Project Architecture
 
-This project is a modern single-page application (SPA) with a serverless backend component.
+This project is a modern single-page application (SPA).
 
-1.  **Frontend (`/src`):** A static React application that provides the user interface. All application source code resides in the `src` directory.
+-   **Frontend (`/src`):** A static React application that provides the user interface. All application source code resides in the `src` directory.
     -   `src/components/`: Reusable React components like the `Header`, `Chatbot`, and `LanguageSwitcher`.
-    -   `src/hooks/useChat.ts`: A custom hook to manage the chat state, including messages, loading status, and communication with the backend.
-    -   `src/services/geminiService.ts`: A service layer that abstracts the API call to our own backend endpoint.
+    -   `src/hooks/useChat.ts`: A custom hook to manage the chat state, including messages, loading status, and communication with the Gemini API.
+    -   `src/services/geminiService.ts`: A service layer that encapsulates the logic for calling the Google Gemini API. It includes language-specific system instructions to tailor the AI's personality.
     -   `src/lib/i18n.ts`: A simple internationalization utility for handling English and Persian translations.
 
-2.  **Backend (`/api/generate.ts`):** A Vercel Serverless Function that acts as a secure proxy to the Google Gemini API.
-    -   It receives the user's prompt and selected language from the frontend.
-    -   It retrieves the `API_KEY` securely from environment variables.
-    -   It constructs a request to the Gemini API, including a language-specific `systemInstruction` to tailor the AI's personality and language.
-    -   It returns the AI's response to the frontend.
-
-This architecture ensures that the `API_KEY` is never exposed to the user's browser, which is a critical security best practice.
+The Google Gemini API is called directly from the frontend. The `API_KEY` is expected to be provided as an environment variable in the execution environment, ensuring it's not hardcoded in the source code.
 
 ## 🚀 Deployment
 
-This application is configured for direct deployment to [Vercel](https://vercel.com/).
+This application can be deployed to any static site hosting service.
 
 1.  Fork this repository.
-2.  Create a new project on Vercel and import the forked repository.
-3.  Add your Google Gemini API key as an environment variable named `API_KEY` in the Vercel project settings.
-4.  Deploy! Vercel will automatically build the frontend and deploy the serverless function.
+2.  Connect your repository to a hosting provider like Vercel or Netlify.
+3.  Add your Google Gemini API key as an environment variable named `API_KEY`.
+4.  Configure the build command (`npm run build` or `vite build`) and the output directory (`dist`).
+5.  Deploy!
