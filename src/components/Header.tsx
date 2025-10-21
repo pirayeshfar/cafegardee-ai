@@ -11,7 +11,6 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
   const titleClasses = language === 'fa' 
     ? "text-xl md:text-2xl font-bold text-stone-800 dark:text-stone-100"
-    //? "font-vazir text-xl md:text-2xl font-bold text-stone-800 dark:text-stone-100"
     : "font-display text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 tracking-tight";
 
   return (

@@ -32,7 +32,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
           <span 
             key={index} 
             className="animate-fade-in-up opacity-0" 
-            style={{ animationDelay: `${100 + index * 100}ms` }}
+            style={{ animationDelay: `${100 + index * 100}ms`, willChange: 'transform, opacity' }}
           >
             {char === ' ' ? '\u00A0' : char}
           </span>
