@@ -23,9 +23,12 @@ export const getBotResponse = async (prompt: string, lang: Language): Promise<st
 
     const ai = new GoogleGenAI({ apiKey });
     
+    // Using the more explicit and robust payload structure for the contents.
+    const contents = [{ parts: [{ text: prompt }] }];
+
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: prompt,
+        contents: contents, // Updated to use the structured format
         config: {
             systemInstruction: getSystemInstruction(lang),
         }
@@ -46,7 +49,8 @@ export const getBotResponse = async (prompt: string, lang: Language): Promise<st
     
   } catch (error) {
     console.error("An error occurred while calling the Gemini API:", error);
-    // Re-throwing the error ensures the UI can catch it and display a generic error message.
+    // This generic error is caught by the useChat hook and displayed to the user.
+    // The specific error is logged to the console for debugging.
     throw new Error("Failed to get response from the AI model.");
   }
 };
