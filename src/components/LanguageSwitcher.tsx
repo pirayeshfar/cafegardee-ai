@@ -30,8 +30,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLangua
     >
       <span
         aria-hidden="true"
-        className="absolute h-7 w-7 bg-amber-500 rounded-full shadow-md transition-transform duration-300 ease-in-out"
-        style={{ transform: isEnglish ? 'translateX(2px)' : 'translateX(34px)' }}
+        className="absolute h-7 w-7 bg-amber-500 rounded-full shadow-md transition-[right] duration-300 ease-in-out"
+        style={{ right: isEnglish ? 'calc(72px - 28px - 2px)' : '2px' }}
       />
       <div className="flex justify-around w-full">
         <span className={`relative z-10 text-xs font-bold transition-colors duration-300 ${isEnglish ? 'text-white' : 'text-stone-500 dark:text-stone-400'}`}>
