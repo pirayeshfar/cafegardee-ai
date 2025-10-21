@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import type { Language, Message } from '../types';
 import { useChat } from '../hooks/useChat';
+import { useTypingEffect } from '../hooks/useTypingEffect';
 import { t } from '../lib/i18n';
 
 interface ChatbotProps {
@@ -15,9 +16,13 @@ const LoadingIndicator: React.FC = () => (
   </div>
 );
 
-const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
+const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   const isUser = message.sender === 'user';
   const isBot = message.sender === 'bot';
+
+  // Apply typing effect only to final bot text messages
+  const isReadyForTyping = isBot && message.type !== 'loading' && message.type !== 'error';
+  const displayText = useTypingEffect(message.text, isReadyForTyping ? 30 : 0);
 
   const containerClasses = `flex mb-4 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
   const messageClasses = `max-w-md lg:max-w-lg xl:max-w-2xl px-4 py-3 rounded-2xl ${
@@ -27,24 +32,24 @@ const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
   }`;
 
   return (
-    <div className={containerClasses}>
+    <li className={containerClasses}>
         {!isUser && (
             <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 me-2">
                 G
             </div>
         )}
       <div className={`${messageClasses} ${message.type === 'error' ? 'bg-red-500 text-white' : ''}`}>
-        {message.type === 'loading' ? <LoadingIndicator /> : <p className="text-sm md:text-base whitespace-pre-wrap">{message.text}</p>}
+        {message.type === 'loading' ? <LoadingIndicator /> : <p className="text-sm md:text-base whitespace-pre-wrap">{displayText}</p>}
       </div>
-    </div>
+    </li>
   );
-};
+});
 
 const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   const [input, setInput] = useState('');
   const { messages, isLoading, sendMessage, clearMessages } = useChat(language);
   const [isChatActive, setIsChatActive] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLLIElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -101,12 +106,15 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
 
   return (
     <div className="flex flex-col h-full w-full max-w-4xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl overflow-hidden">
-      <div ref={messagesEndRef} className="flex-1 overflow-y-auto p-4 sm:p-6">
+      <ul 
+        className="flex-1 overflow-y-auto p-4 sm:p-6"
+        aria-live="polite"
+      >
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
         ))}
-         <div ref={messagesEndRef} />
-      </div>
+         <li ref={messagesEndRef} />
+      </ul>
       <div className="border-t border-stone-200 dark:border-stone-800 p-4">
         {messages.length === 0 && (
              <button

@@ -10,9 +10,9 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLangua
   const isEnglish = language === 'en';
 
   return (
-    <div className="relative flex w-[74px] h-9 items-center rounded-full bg-stone-200 dark:bg-stone-800 p-1">
+    <div className="relative flex w-[80px] h-9 items-center rounded-full bg-stone-200 dark:bg-stone-800 p-1">
       <span
-        className="absolute h-7 w-[34px] rounded-full bg-amber-500 shadow-md transition-transform duration-300 ease-in-out"
+        className="absolute left-1 h-7 w-[34px] rounded-full bg-amber-500 shadow-md transition-transform duration-300 ease-in-out"
         style={{
           transform: isEnglish ? 'translateX(0px)' : 'translateX(36px)',
         }}
