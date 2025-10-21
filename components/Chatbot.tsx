@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import type { Language, Message } from '../types';
 import { useChat } from '../hooks/useChat';
@@ -91,7 +90,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
              <div className="relative w-full">
                 <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-5 -translate-y-1/2 text-stone-400 rtl:left-auto rtl:right-5"></i>
                 <div
-                    className="w-full text-base md:text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-shadow text-stone-500 text-left rtl:text-right"
+                    className="w-full text-sm sm:text-base md:text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-shadow text-stone-500 text-left rtl:text-right"
                 >
                     {t('placeholder', language)}
                 </div>
