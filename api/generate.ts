@@ -1,10 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 
-// This is a Vercel Edge Function for speed
-export const config = {
-  runtime: 'edge',
-};
-
 // Helper function to get system instruction based on language
 const getSystemInstruction = (lang: string): string => {
     if (lang === 'fa') {
