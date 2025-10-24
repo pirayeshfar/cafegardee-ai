@@ -24,15 +24,14 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   const isReadyForTyping = isBot && message.type !== 'loading' && message.type !== 'error';
   const typedText = useTypingEffect(message.text, isReadyForTyping ? 30 : 0);
 
-  const containerClasses = `flex mb-4 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
-  const messageClasses = `prose prose-sm md:prose-base dark:prose-invert max-w-md lg:max-w-lg xl:max-w-2xl px-4 py-3 rounded-2xl ${
+  const containerClasses = `flex w-full mb-4 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
+  const messageClasses = `prose prose-sm md:prose-base dark:prose-invert max-w-full px-4 py-3 rounded-2xl ${
     isUser
       ? 'bg-amber-500 text-white rounded-br-none'
       : 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-bl-none'
   }`;
   
   const renderer = new marked.Renderer();
-  // Open links in a new tab
   renderer.link = (href: string, title: string | null, text: string) => `<a href="${href}" title="${title || ''}" target="_blank" rel="noopener noreferrer">${text}</a>`;
   marked.setOptions({ renderer });
 
@@ -40,17 +39,16 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   const getRenderedHtml = () => {
     try {
       const textToRender = isUser ? message.text : typedText;
-      // For bot messages, parse markdown. For user messages, display as plain text.
       const parsedText = isBot ? marked.parse(textToRender) as string : textToRender.replace(/</g, "&lt;").replace(/>/g, "&gt;");
       return parsedText;
     } catch (e) {
       console.error("Error parsing markdown:", e);
-      return isUser ? message.text : typedText; // Fallback to plain text
+      return isUser ? message.text : typedText;
     }
   };
 
   return (
-    <li className={containerClasses} aria-label={`Message from ${message.sender}`}>
+    <div className={containerClasses} aria-label={`Message from ${message.sender}`}>
         {!isUser && (
             <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 me-2" aria-hidden="true">
                 G
@@ -59,33 +57,32 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
       <div className={`${messageClasses} ${message.type === 'error' ? 'bg-red-500 text-white prose-p:text-white prose-strong:text-white' : ''}`}>
         {message.type === 'loading' ? <LoadingIndicator /> : <div dangerouslySetInnerHTML={{ __html: getRenderedHtml() }} />}
       </div>
-    </li>
+    </div>
   );
 });
 
 const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   const [input, setInput] = useState('');
-  const { messages, isLoading, sendMessage, clearMessages, addBotMessage } = useChat(language);
-  const [isChatActive, setIsChatActive] = useState(false);
+  const { query, response, isLoading, sendQuery, clearChat, setBotMessage } = useChat(language);
   const [isFindingLocation, setIsFindingLocation] = useState(false);
-  const messagesEndRef = useRef<HTMLLIElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const responseRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    clearChat();
+    setInput('');
+  }, [language, clearChat]);
   
   useEffect(() => {
-    if (isChatActive) {
-        clearMessages();
-        setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isChatActive, language]);
+      if (response && !isLoading) {
+          responseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+  }, [response, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    sendMessage(input);
+    sendQuery(input);
     setInput('');
   };
 
@@ -99,51 +96,35 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
         const locationPromptForAI = `${t('locationPromptPart1', language)} ${t('locationPromptLat', language)}: ${latitude}, ${t('locationPromptLng', language)}: ${longitude}.`;
         const userMessageText = t('findNearMe', language);
         
-        sendMessage(userMessageText, locationPromptForAI, { lat: latitude, lng: longitude });
+        sendQuery(userMessageText, locationPromptForAI, { lat: latitude, lng: longitude });
         setIsFindingLocation(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
-        addBotMessage(t('locationError', language), 'error');
+        setBotMessage(t('locationError', language), 'error');
         setIsFindingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
   
-  if (!isChatActive) {
-      return (
-        <div className="w-full max-w-2xl text-center cursor-pointer" onClick={() => setIsChatActive(true)}>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500">
-                {t('welcomeTitle', language)}
-            </h1>
-            <p className="text-stone-600 dark:text-stone-400 mb-8 md:text-lg">{t('welcomeSubtitle', language)}</p>
-             <div className="relative w-full">
-                <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-5 -translate-y-1/2 text-stone-400 rtl:left-auto rtl:right-5"></i>
-                <div
-                    className="w-full text-sm sm:text-base md:text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent hover:shadow-xl transition-shadow text-stone-500 text-left rtl:text-right"
-                >
-                    {t('placeholder', language)}
-                </div>
-             </div>
-        </div>
-      );
-  }
-
   return (
     <div className="flex flex-col h-full w-full max-w-4xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl overflow-hidden">
-      <ul 
-        className="flex-1 overflow-y-auto p-4 sm:p-6"
-        aria-live="polite"
-        role="log"
-      >
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
-        ))}
-         <li ref={messagesEndRef} className="h-0" />
-      </ul>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        {!query && !response && (
+           <div className="w-full text-center">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500">
+                    {t('welcomeTitle', language)}
+                </h1>
+                <p className="text-stone-600 dark:text-stone-400 mb-8 md:text-lg">{t('welcomeSubtitle', language)}</p>
+            </div>
+        )}
+        
+        {query && <ChatMessage message={query} />}
+        {response && <div ref={responseRef}><ChatMessage message={response} /></div>}
+      </div>
       <div className="border-t border-stone-200 dark:border-stone-800 p-4">
-        {messages.length === 0 && (
+        {!query && (
              <button
                 onClick={handleLocationClick}
                 disabled={isLoading || isFindingLocation}
