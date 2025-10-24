@@ -35,9 +35,13 @@ export const useChat = (language: Language) => {
       setResponse({ id: 'bot-response', text: responseText, sender: 'bot' });
     } catch (error) {
       console.error(error);
+      const messageText = error instanceof Error && error.message === 'TIMEOUT'
+        ? t('timeoutError', language)
+        : t('errorMessage', language);
+        
       setResponse({ 
         id: 'bot-error', 
-        text: t('errorMessage', language), 
+        text: messageText, 
         sender: 'bot', 
         type: 'error' 
       });

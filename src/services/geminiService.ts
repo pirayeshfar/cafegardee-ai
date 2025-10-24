@@ -6,6 +6,9 @@ interface Location {
 }
 
 export const getBotResponse = async (prompt: string, lang: Language, location?: Location): Promise<string> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout
+
   try {
     const response = await fetch('/api/generate', {
       method: 'POST',
@@ -13,7 +16,10 @@ export const getBotResponse = async (prompt: string, lang: Language, location?: 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ prompt, lang, location }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'API request failed with non-JSON response' }));
@@ -29,8 +35,12 @@ export const getBotResponse = async (prompt: string, lang: Language, location?: 
     return data.text;
     
   } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error("Fetch request timed out.");
+      throw new Error("TIMEOUT");
+    }
     console.error("Error calling backend API endpoint:", error);
-    // Rethrow a user-friendly error
     throw new Error("Failed to get response from AI");
   }
 };
