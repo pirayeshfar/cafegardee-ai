@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
+import { marked } from 'marked';
 import type { Language, Message } from '../types';
 import { useChat } from '../hooks/useChat';
 import { useTypingEffect } from '../hooks/useTypingEffect';
@@ -20,16 +21,17 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   const isUser = message.sender === 'user';
   const isBot = message.sender === 'bot';
 
-  // Apply typing effect only to final bot text messages
   const isReadyForTyping = isBot && message.type !== 'loading' && message.type !== 'error';
-  const displayText = useTypingEffect(message.text, isReadyForTyping ? 30 : 0);
+  const typedText = useTypingEffect(message.text, isReadyForTyping ? 30 : 0);
 
   const containerClasses = `flex mb-4 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
-  const messageClasses = `max-w-md lg:max-w-lg xl:max-w-2xl px-4 py-3 rounded-2xl ${
+  const messageClasses = `prose prose-sm md:prose-base dark:prose-invert max-w-md lg:max-w-lg xl:max-w-2xl px-4 py-3 rounded-2xl ${
     isUser
       ? 'bg-amber-500 text-white rounded-br-none'
       : 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-bl-none'
   }`;
+
+  const renderedHtml = isReadyForTyping ? marked.parse(typedText) : typedText;
 
   return (
     <li className={containerClasses}>
@@ -39,7 +41,7 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
             </div>
         )}
       <div className={`${messageClasses} ${message.type === 'error' ? 'bg-red-500 text-white' : ''}`}>
-        {message.type === 'loading' ? <LoadingIndicator /> : <p className="text-sm md:text-base whitespace-pre-wrap">{displayText}</p>}
+        {message.type === 'loading' ? <LoadingIndicator /> : <div dangerouslySetInnerHTML={{ __html: renderedHtml as string }} />}
       </div>
     </li>
   );
@@ -49,6 +51,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   const [input, setInput] = useState('');
   const { messages, isLoading, sendMessage, clearMessages } = useChat(language);
   const [isChatActive, setIsChatActive] = useState(false);
+  const [isFindingLocation, setIsFindingLocation] = useState(false);
   const messagesEndRef = useRef<HTMLLIElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,16 +73,20 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   };
 
   const handleLocationClick = () => {
-    sendMessage(t('findingLocation', language));
+    if (isFindingLocation || isLoading) return;
+    setIsFindingLocation(true);
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         const locationPrompt = `Find cafes and restaurants near me. My current location is latitude: ${latitude}, longitude: ${longitude}.`;
-        sendMessage(locationPrompt);
+        sendMessage(locationPrompt, { lat: latitude, lng: longitude });
+        setIsFindingLocation(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
         sendMessage(t('locationError', language));
+        setIsFindingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -119,10 +126,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
         {messages.length === 0 && (
              <button
                 onClick={handleLocationClick}
-                className="mb-2 w-full text-center px-4 py-2 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900 transition-colors text-sm"
+                disabled={isLoading || isFindingLocation}
+                className="mb-2 w-full text-center px-4 py-2 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900 transition-colors text-sm disabled:opacity-50 disabled:cursor-wait"
               >
-                <i className="fa-solid fa-location-crosshairs me-2"></i>
-                {t('findNearMe', language)}
+                <i className={`fa-solid ${isFindingLocation ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'} me-2`}></i>
+                {isFindingLocation ? t('findingLocation', language) : t('findNearMe', language)}
               </button>
         )}
         <form onSubmit={handleSubmit} className="flex items-center gap-3">

@@ -1,12 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 
 type Language = 'en' | 'fa';
+type Location = { lat: number, lng: number };
 
 const getSystemInstruction = (lang: Language): string => {
     if (lang === 'fa') {
-        return "شما 'کافه گردی' هستید، یک دستیار هوش مصنوعی دوستانه و آگاه. هدف شما کمک به کاربران برای کشف کافه‌ها و رستوران‌ها و ارائه دستورالعمل‌های دقیق برای انواع قهوه، چای و سایر نوشیدنی‌ها است. همیشه با لحنی گرم و صمیمی پاسخ دهید. اگر کاربر در مورد مکان‌های نزدیک سوال کرد، از اطلاعات مکان ارائه شده برای ارائه پیشنهادات مرتبط استفاده کنید. همیشه فقط به زبان فارسی پاسخ دهید.";
+        return "شما 'کافه گردی' هستید، یک دستیار هوش مصنوعی دوستانه و آگاه. هدف شما کمک به کاربران برای کشف کافه‌ها و رستوران‌ها و ارائه دستورالعمل‌های دقیق برای انواع قهوه، چای و سایر نوشیدنی‌ها است. همیشه با لحنی گرم و صمیمی پاسخ دهید. اگر کاربر در مورد مکان‌های نزدیک سوال کرد، از ابزار Google Maps برای ارائه پیشنهادات دقیق و مرتبط استفاده کنید. همیشه فقط به زبان فارسی پاسخ دهید.";
     }
-    return "You are 'Cafegardee', a friendly and knowledgeable AI assistant. Your purpose is to help users discover cafes and restaurants, and to provide detailed recipes for a wide variety of coffees, teas, and other beverages. Always respond in a warm and inviting tone. If the user asks for nearby places, use the provided location information to give relevant suggestions. Always respond only in English.";
+    return "You are 'Cafegardee', a friendly and knowledgeable AI assistant. Your purpose is to help users discover cafes and restaurants, and to provide detailed recipes for a wide variety of coffees, teas, and other beverages. Always respond in a warm and inviting tone. If the user asks for nearby places, use the Google Maps tool to give accurate and relevant suggestions. Always respond only in English.";
 };
 
 // This serverless function acts as a secure backend proxy to the Google Gemini API.
@@ -19,7 +20,7 @@ export default async function handler(request: Request) {
     }
 
     try {
-        const { prompt, lang } = await request.json() as { prompt: string, lang: Language };
+        const { prompt, lang, location } = await request.json() as { prompt: string, lang: Language, location?: Location };
 
         if (!prompt || !lang) {
             return new Response(JSON.stringify({ error: "Missing prompt or language in request body" }), {
@@ -39,16 +40,47 @@ export default async function handler(request: Request) {
 
         const ai = new GoogleGenAI({ apiKey });
 
-        // Use the dedicated Chat API for a more robust conversational experience
-        const chat = ai.chats.create({
+        const requestPayload: any = {
             model: 'gemini-2.5-flash',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 systemInstruction: getSystemInstruction(lang),
             },
-        });
+        };
         
-        const response = await chat.sendMessage({ message: prompt });
-        const text = response.text;
+        // If location data is provided, enhance the request with Google Maps grounding.
+        if (location && typeof location.lat === 'number' && typeof location.lng === 'number') {
+            requestPayload.config.tools = [{ googleMaps: {} }];
+            requestPayload.config.toolConfig = {
+                retrievalConfig: {
+                    latLng: {
+                        latitude: location.lat,
+                        longitude: location.lng,
+                    },
+                },
+            };
+        }
+
+        const response = await ai.models.generateContent(requestPayload);
+        
+        let text = response.text;
+
+        // Per API requirements, we must display grounding sources if they are returned.
+        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        if (groundingChunks && groundingChunks.length > 0) {
+            const sources = groundingChunks
+                .flatMap((chunk: any) => chunk.maps ? [{ title: chunk.maps.title, uri: chunk.maps.uri }] : [])
+                .filter((source: any, index: number, self: any[]) => 
+                    source.uri && index === self.findIndex((s) => s.uri === source.uri)
+                );
+        
+            if (sources.length > 0) {
+                const sourcesHeader = lang === 'fa' ? '\n\n**منابع:**' : '\n\n**Sources:**';
+                const sourcesList = sources.map((source: any) => `* [${source.title || 'View on Google Maps'}](${source.uri})`).join('\n');
+                text = text + sourcesHeader + '\n' + sourcesList;
+            }
+        }
+
 
         // Provide a fallback if the response is empty
         if (typeof text !== 'string' || text.trim() === '') {

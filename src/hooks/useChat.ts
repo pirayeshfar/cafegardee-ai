@@ -3,11 +3,16 @@ import type { Message, Language } from '../types';
 import { getBotResponse } from '../services/geminiService';
 import { t } from '../lib/i18n';
 
+interface Location {
+  lat: number;
+  lng: number;
+}
+
 export const useChat = (language: Language) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(async (text: string, location?: Location) => {
     if (isLoading || !text.trim()) return;
 
     const userMessage: Message = { id: Date.now().toString(), text, sender: 'user' };
@@ -18,7 +23,7 @@ export const useChat = (language: Language) => {
     setMessages(prev => [...prev, { id: loadingMessageId, text: '...', sender: 'bot', type: 'loading' }]);
 
     try {
-      const responseText = await getBotResponse(text, language);
+      const responseText = await getBotResponse(text, language, location);
       const botMessage: Message = { id: (Date.now() + 2).toString(), text: responseText, sender: 'bot' };
       setMessages(prev => prev.map(msg => msg.id === loadingMessageId ? botMessage : msg));
     } catch (error) {
