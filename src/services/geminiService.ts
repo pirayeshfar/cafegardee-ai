@@ -1,4 +1,4 @@
-import { GoogleGenAI, GenerateContentRequest } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import type { Language } from '../types';
 
 interface Location {
@@ -18,9 +18,13 @@ const model = 'gemini-2.5-flash';
 
 export const getBotResponse = async (prompt: string, lang: Language, location?: Location): Promise<string> => {
   try {
-    const request: GenerateContentRequest = {
+    const request: {
+        model: string;
+        contents: any;
+        config: any;
+    } = {
       model,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
       config: {
         systemInstruction: getSystemInstruction(lang),
       },
@@ -39,9 +43,9 @@ export const getBotResponse = async (prompt: string, lang: Language, location?: 
     }
     
     const response = await ai.models.generateContent(request);
-    const text = response.text?.trim();
+    const text = response.text;
 
-    if (!text) {
+    if (!text || text.trim() === '') {
          console.warn("Gemini API returned an empty or invalid response text.");
          const fallbackText = lang === 'fa' 
             ? 'متاسفانه نتوانستم پاسخ مناسبی پیدا کنم. لطفاً سوال خود را به شکل دیگری بپرسید.'
@@ -49,7 +53,7 @@ export const getBotResponse = async (prompt: string, lang: Language, location?: 
         return fallbackText;
     }
 
-    return text;
+    return text.trim();
 
   } catch (error) {
     console.error("Error calling Gemini API:", error);
