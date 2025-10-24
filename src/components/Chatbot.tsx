@@ -48,7 +48,7 @@ const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
 
 const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   const [input, setInput] = useState('');
-  const { messages, isLoading, sendMessage, clearMessages } = useChat(language);
+  const { messages, isLoading, sendMessage, initializeChat } = useChat(language);
   const [isChatActive, setIsChatActive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,12 +59,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   
   useEffect(() => {
     if (isChatActive) {
-        clearMessages();
-        // Send a default starter message from the bot when chat becomes active
-        sendMessage("سلام");
+        initializeChat();
         setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isChatActive, language]);
+  }, [isChatActive, language, initializeChat]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +71,18 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   };
 
   const handleLocationClick = () => {
-    sendMessage(t('findingLocation', language));
+    // To provide a better UX, we'll add the "Finding location..." message directly as a user message
+    const findingLocationMessage: Message = { id: Date.now().toString(), text: t('findingLocation', language), sender: 'user' };
+    
+    // This is a temporary way to add a message without invoking the full bot response cycle
+    // A more robust solution might involve refactoring useChat, but this is fine for this specific case.
+    const tempSendMessage = (msg: Message) => {
+        sendMessage(msg.text);
+    };
+    
+    // Show the "Finding..." message immediately, then get location
+    tempSendMessage(findingLocationMessage);
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;

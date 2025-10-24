@@ -8,6 +8,15 @@ export const useChat = (language: Language) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const initializeChat = useCallback(() => {
+    const welcomeMessage: Message = {
+        id: Date.now().toString(),
+        text: t('welcomeSubtitle', language),
+        sender: 'bot'
+    };
+    setMessages([welcomeMessage]);
+  }, [language]);
+
   const sendMessage = useCallback(async (text: string) => {
     if (isLoading || !text.trim()) return;
 
@@ -36,7 +45,5 @@ export const useChat = (language: Language) => {
     }
   }, [isLoading, language]);
   
-  const clearMessages = () => setMessages([]);
-
-  return { messages, isLoading, sendMessage, clearMessages };
+  return { messages, isLoading, sendMessage, initializeChat };
 };
