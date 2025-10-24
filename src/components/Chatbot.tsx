@@ -33,7 +33,8 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   
   // Custom renderer for marked to open links in a new tab
   const renderer = new marked.Renderer();
-  renderer.link = (href, title, text) => `<a href="${href}" title="${title}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  // FIX: Type error due to a mismatch between `marked` version and `@types/marked`. The type definitions expect a newer function signature. Casting to `any` bypasses the incorrect type checking for this assignment.
+  (renderer as any).link = (href: string, title: string | null, text: string) => `<a href="${href}" title="${title || ''}" target="_blank" rel="noopener noreferrer">${text}</a>`;
   marked.setOptions({ renderer });
 
 

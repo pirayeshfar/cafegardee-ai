@@ -12,6 +12,7 @@ const getSystemInstruction = (lang: Language): string => {
 
 // This serverless function acts as a secure backend proxy to the Google Gemini API.
 export default async function handler(request: Request) {
+    console.log("Received request for /api/generate");
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: "Method not allowed" }), {
             status: 405,
@@ -62,29 +63,16 @@ export default async function handler(request: Request) {
                 },
             };
         }
-
+        
+        console.log("Sending request to Gemini API...");
         const response = await ai.models.generateContent(requestPayload);
+        console.log("Received response from Gemini API.");
         
-        let text = response.text;
-
-        // Per API requirements, we must display grounding sources if they are returned.
-        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-        if (groundingChunks && groundingChunks.length > 0) {
-            const sources = groundingChunks
-                .flatMap((chunk: any) => chunk.maps ? [{ title: chunk.maps.title, uri: chunk.maps.uri }] : [])
-                .filter((source: any, index: number, self: any[]) => 
-                    source.uri && index === self.findIndex((s: any) => s.uri === source.uri)
-                );
-        
-            if (sources.length > 0) {
-                const sourcesHeader = lang === 'fa' ? '\n\n**منابع:**' : '\n\n**Sources:**';
-                const sourcesList = sources.map((source: any) => `* [${source.title || 'View on Google Maps'}](${source.uri})`).join('\n');
-                text = text + sourcesHeader + '\n' + sourcesList;
-            }
-        }
+        const text = response.text?.trim();
 
         // Provide a fallback if the response is empty
-        if (typeof text !== 'string' || text.trim() === '') {
+        if (!text) {
+             console.warn("Gemini API returned an empty or invalid response text.");
              const fallbackText = lang === 'fa' 
                 ? 'متاسفانه نتوانستم پاسخ مناسبی پیدا کنم. لطفاً سوال خود را به شکل دیگری بپرسید.'
                 : 'Sorry, I couldn\'t find a suitable response. Please try asking in a different way.';
