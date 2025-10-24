@@ -12,21 +12,29 @@ export const useChat = (language: Language) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const sendMessage = useCallback(async (text: string, location?: Location) => {
-    if (isLoading || !text.trim()) return;
+  const addBotMessage = useCallback((text: string, type: Message['type'] = 'text') => {
+    const botMessage: Message = {
+      id: Date.now().toString(),
+      text,
+      sender: 'bot',
+      type,
+    };
+    setMessages(prev => [...prev, botMessage]);
+  }, []);
 
-    // Don't show the user's location prompt message, just send it to the AI
-    if (!location) {
-        const userMessage: Message = { id: Date.now().toString(), text, sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
-    }
+  const sendMessage = useCallback(async (userText: string, aiPrompt?: string, location?: Location) => {
+    const textForAI = aiPrompt || userText;
+    if (isLoading || !userText.trim()) return;
+
+    const userMessage: Message = { id: Date.now().toString(), text: userText, sender: 'user' };
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
     const loadingMessageId = (Date.now() + 1).toString();
     setMessages(prev => [...prev, { id: loadingMessageId, text: '...', sender: 'bot', type: 'loading' }]);
 
     try {
-      const responseText = await getBotResponse(text, language, location);
+      const responseText = await getBotResponse(textForAI, language, location);
       const botMessage: Message = { id: (Date.now() + 2).toString(), text: responseText, sender: 'bot' };
       setMessages(prev => prev.map(msg => msg.id === loadingMessageId ? botMessage : msg));
     } catch (error) {
@@ -45,5 +53,5 @@ export const useChat = (language: Language) => {
   
   const clearMessages = () => setMessages([]);
 
-  return { messages, isLoading, sendMessage, clearMessages };
+  return { messages, isLoading, sendMessage, clearMessages, addBotMessage };
 };

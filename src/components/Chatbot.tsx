@@ -40,7 +40,8 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   const getRenderedHtml = () => {
     try {
       const textToRender = isUser ? message.text : typedText;
-      const parsedText = isBot ? marked.parse(textToRender) as string : textToRender;
+      // For bot messages, parse markdown. For user messages, display as plain text.
+      const parsedText = isBot ? marked.parse(textToRender) as string : textToRender.replace(/</g, "&lt;").replace(/>/g, "&gt;");
       return parsedText;
     } catch (e) {
       console.error("Error parsing markdown:", e);
@@ -64,7 +65,7 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
 
 const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   const [input, setInput] = useState('');
-  const { messages, isLoading, sendMessage, clearMessages } = useChat(language);
+  const { messages, isLoading, sendMessage, clearMessages, addBotMessage } = useChat(language);
   const [isChatActive, setIsChatActive] = useState(false);
   const [isFindingLocation, setIsFindingLocation] = useState(false);
   const messagesEndRef = useRef<HTMLLIElement>(null);
@@ -95,21 +96,15 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const locationPrompt = `${t('locationPromptPart1', language)} ${t('locationPromptLat', language)}: ${latitude}, ${t('locationPromptLng', language)}: ${longitude}.`;
-        sendMessage(locationPrompt, { lat: latitude, lng: longitude });
+        const locationPromptForAI = `${t('locationPromptPart1', language)} ${t('locationPromptLat', language)}: ${latitude}, ${t('locationPromptLng', language)}: ${longitude}.`;
+        const userMessageText = t('findNearMe', language);
+        
+        sendMessage(userMessageText, locationPromptForAI, { lat: latitude, lng: longitude });
         setIsFindingLocation(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
-        // Create a temporary error message to show in the chat
-        const errorMessage: Message = {
-            id: Date.now().toString(),
-            text: t('locationError', language),
-            sender: 'bot',
-            type: 'error',
-        };
-        // This is a way to inject a message without going through the hook's full flow
-        (messages as Message[]).push(errorMessage); 
+        addBotMessage(t('locationError', language), 'error');
         setIsFindingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }

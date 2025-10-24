@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, GenerateContentRequest } from '@google/genai';
 import type { Language } from '../types';
 
 interface Location {
@@ -14,30 +14,31 @@ const getSystemInstruction = (lang: Language): string => {
 };
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+const model = 'gemini-2.5-flash';
 
 export const getBotResponse = async (prompt: string, lang: Language, location?: Location): Promise<string> => {
   try {
-    const requestPayload: any = {
-        model: 'gemini-2.5-flash',
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-            systemInstruction: getSystemInstruction(lang),
-        },
+    const request: GenerateContentRequest = {
+      model,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: getSystemInstruction(lang),
+      },
     };
 
     if (location && typeof location.lat === 'number' && typeof location.lng === 'number') {
-        requestPayload.config.tools = [{ googleMaps: {} }];
-        requestPayload.config.toolConfig = {
-            retrievalConfig: {
-                latLng: {
-                    latitude: location.lat,
-                    longitude: location.lng,
-                },
-            },
-        };
+      request.config.tools = [{ googleMaps: {} }];
+      request.config.toolConfig = {
+        retrievalConfig: {
+          latLng: {
+            latitude: location.lat,
+            longitude: location.lng,
+          },
+        },
+      };
     }
     
-    const response = await ai.models.generateContent(requestPayload);
+    const response = await ai.models.generateContent(request);
     const text = response.text?.trim();
 
     if (!text) {
