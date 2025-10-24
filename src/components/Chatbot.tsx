@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, memo } from 'react';
 import { marked } from 'marked';
 import type { Language, Message } from '../types';
 import { useChat } from '../hooks/useChat';
-import { useTypingEffect } from '../hooks/useTypingEffect';
 import { t } from '../lib/i18n';
 
 interface ChatbotProps {
@@ -19,10 +18,6 @@ const LoadingIndicator: React.FC = () => (
 
 const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
   const isUser = message.sender === 'user';
-  const isBot = message.sender === 'bot';
-
-  const isReadyForTyping = isBot && message.type !== 'loading' && message.type !== 'error';
-  const typedText = useTypingEffect(message.text, isReadyForTyping ? 30 : 0);
 
   const containerClasses = `flex w-full mb-4 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
   const messageClasses = `prose prose-sm md:prose-base dark:prose-invert max-w-full px-4 py-3 rounded-2xl ${
@@ -38,12 +33,12 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
 
   const getRenderedHtml = () => {
     try {
-      const textToRender = isUser ? message.text : typedText;
-      const parsedText = isBot ? marked.parse(textToRender) as string : textToRender.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // Use message.text directly. Streaming updates the text prop.
+      const parsedText = message.sender === 'bot' ? marked.parse(message.text) as string : message.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
       return parsedText;
     } catch (e) {
       console.error("Error parsing markdown:", e);
-      return isUser ? message.text : typedText;
+      return message.text;
     }
   };
 
@@ -63,26 +58,24 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
 
 const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   const [input, setInput] = useState('');
-  const { query, response, isLoading, sendQuery, clearChat, setBotMessage } = useChat(language);
+  const { messages, isLoading, sendMessage, clearMessages, setBotMessage } = useChat(language);
   const [isFindingLocation, setIsFindingLocation] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const responseRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    clearChat();
-    setInput('');
-  }, [language, clearChat]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
   
   useEffect(() => {
-      if (response && !isLoading) {
-          responseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-  }, [response, isLoading]);
+    clearMessages();
+    setInput('');
+  }, [language, clearMessages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    sendQuery(input);
+    sendMessage(input);
     setInput('');
   };
 
@@ -96,7 +89,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
         const locationPromptForAI = `${t('locationPromptPart1', language)} ${t('locationPromptLat', language)}: ${latitude}, ${t('locationPromptLng', language)}: ${longitude}.`;
         const userMessageText = t('findNearMe', language);
         
-        sendQuery(userMessageText, locationPromptForAI, { lat: latitude, lng: longitude });
+        sendMessage(userMessageText, locationPromptForAI, { lat: latitude, lng: longitude });
         setIsFindingLocation(false);
       },
       (error) => {
@@ -111,7 +104,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
   return (
     <div className="flex flex-col h-full w-full max-w-4xl bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-        {!query && !response && (
+        {messages.length === 0 && (
            <div className="w-full text-center">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500">
                     {t('welcomeTitle', language)}
@@ -120,11 +113,13 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
             </div>
         )}
         
-        {query && <ChatMessage message={query} />}
-        {response && <div ref={responseRef}><ChatMessage message={response} /></div>}
+        {messages.map((msg) => (
+          <ChatMessage key={msg.id} message={msg} />
+        ))}
+         <div ref={messagesEndRef} />
       </div>
       <div className="border-t border-stone-200 dark:border-stone-800 p-4">
-        {!query && (
+        {messages.length === 0 && (
              <button
                 onClick={handleLocationClick}
                 disabled={isLoading || isFindingLocation}

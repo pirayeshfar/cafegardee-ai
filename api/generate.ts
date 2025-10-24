@@ -56,27 +56,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
     }
     
-    const response = await ai.models.generateContent({
+    const stream = await ai.models.generateContentStream({
       model,
       contents: { parts: [{ text: prompt }] },
       config: requestConfig,
     });
     
-    const text = response.text;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
 
-    if (!text || text.trim() === '') {
-         console.warn("Gemini API returned an empty response.");
-         const fallbackText = lang === 'fa' 
-            ? 'متاسفانه نتوانستم پاسخ مناسبی پیدا کنم. لطفاً سوال خود را به شکل دیگری بپرسید.'
-            : 'Sorry, I couldn\'t find a suitable response. Please try asking in a different way.';
-        return res.status(200).json({ text: fallbackText });
+    for await (const chunk of stream) {
+      if (chunk.text) {
+        res.write(chunk.text);
+      }
     }
 
-    return res.status(200).json({ text: text.trim() });
+    res.end();
 
   } catch (error) {
-    console.error("Error in /api/generate:", error);
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return res.status(500).json({ error: "Failed to get response from AI", details: message });
+    console.error("Error in /api/generate (stream):", error);
+    // If headers are already sent, we can't send a JSON error. Just end the stream.
+    if (!res.headersSent) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      res.status(500).json({ error: "Failed to get response from AI", details: message });
+    } else {
+      res.end();
+    }
   }
 }

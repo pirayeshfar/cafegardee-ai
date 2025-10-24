@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { Message, Language } from '../types';
-import { getBotResponse } from '../services/geminiService';
+import { getBotResponseStream } from '../services/geminiService';
 import { t } from '../lib/i18n';
 
 interface Location {
@@ -9,57 +9,62 @@ interface Location {
 }
 
 export const useChat = (language: Language) => {
-  const [query, setQuery] = useState<Message | null>(null);
-  const [response, setResponse] = useState<Message | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const clearChat = useCallback(() => {
-    setQuery(null);
-    setResponse(null);
-  }, []);
-
-  const sendQuery = useCallback(async (userText: string, aiPrompt?: string, location?: Location) => {
+  const sendMessage = useCallback(async (userText: string, aiPrompt?: string, location?: Location) => {
     const textForAI = aiPrompt || userText;
     if (isLoading || !userText.trim()) return;
 
-    // Clear previous Q&A and set the new user query
-    setResponse(null);
-    setQuery({ id: 'user-query', text: userText, sender: 'user' });
+    const userMessage: Message = { id: Date.now().toString(), text: userText, sender: 'user' };
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Set a temporary loading message
-    setResponse({ id: 'bot-loading', text: '...', sender: 'bot', type: 'loading' });
+    const botMessageId = (Date.now() + 1).toString();
+    // Add a placeholder bot message which will be updated
+    setMessages(prev => [...prev, { id: botMessageId, text: '', sender: 'bot', type: 'loading' }]);
+    
+    let accumulatedText = '';
 
-    try {
-      const responseText = await getBotResponse(textForAI, language, location);
-      setResponse({ id: 'bot-response', text: responseText, sender: 'bot' });
-    } catch (error) {
-      console.error(error);
-      const messageText = error instanceof Error && error.message === 'TIMEOUT'
-        ? t('timeoutError', language)
-        : t('errorMessage', language);
-        
-      setResponse({ 
-        id: 'bot-error', 
-        text: messageText, 
-        sender: 'bot', 
-        type: 'error' 
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    getBotResponseStream(
+      textForAI,
+      language,
+      location,
+      (chunk) => { // onChunk
+        accumulatedText += chunk;
+        setMessages(prev => prev.map(msg => 
+          msg.id === botMessageId 
+            ? { ...msg, text: accumulatedText, type: 'text' } // Update message in-place
+            : msg
+        ));
+      },
+      () => { // onComplete
+        setIsLoading(false);
+      },
+      (error) => { // onError
+        console.error(error);
+        const errorMessage: Message = { 
+          id: botMessageId, 
+          text: t('errorMessage', language), 
+          sender: 'bot', 
+          type: 'error' 
+        };
+        setMessages(prev => prev.map(msg => msg.id === botMessageId ? errorMessage : msg));
+        setIsLoading(false);
+      }
+    );
   }, [isLoading, language]);
-
+  
   const setBotMessage = useCallback((text: string, type: Message['type'] = 'text') => {
-    setResponse(null);
-    setQuery(null);
-    setResponse({
-      id: 'bot-message',
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
       text,
       sender: 'bot',
       type,
-    });
+    }]);
   }, []);
 
-  return { query, response, isLoading, sendQuery, clearChat, setBotMessage };
+  const clearMessages = () => setMessages([]);
+
+  return { messages, isLoading, sendMessage, clearMessages, setBotMessage };
 };

@@ -5,42 +5,42 @@ interface Location {
   lng: number;
 }
 
-export const getBotResponse = async (prompt: string, lang: Language, location?: Location): Promise<string> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout
-
+export const getBotResponseStream = async (
+  prompt: string, 
+  lang: Language, 
+  location: Location | undefined,
+  onChunk: (chunk: string) => void,
+  onComplete: () => void,
+  onError: (error: Error) => void,
+) => {
   try {
     const response = await fetch('/api/generate', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, lang, location }),
-      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'API request failed with non-JSON response' }));
-        console.error('API Error Response:', errorData);
-        throw new Error(errorData.error || `API request failed with status ${response.status}`);
+    if (!response.ok || !response.body) {
+      const errorText = await response.text();
+      console.error('API Error Response Text:', errorText);
+      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
     }
 
-    const data = await response.json();
-    if (data.error) {
-        throw new Error(data.error);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      onChunk(decoder.decode(value, { stream: true }));
     }
     
-    return data.text;
+    onComplete();
     
   } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
-      console.error("Fetch request timed out.");
-      throw new Error("TIMEOUT");
-    }
-    console.error("Error calling backend API endpoint:", error);
-    throw new Error("Failed to get response from AI");
+    console.error("Error calling backend API stream:", error);
+    onError(error instanceof Error ? error : new Error("Failed to get response from AI"));
   }
 };
