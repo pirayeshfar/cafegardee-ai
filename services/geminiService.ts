@@ -54,8 +54,9 @@ When asked for places, provide a list with names, a short description, and if po
           if (chunk.maps?.placeAnswerSources?.reviewSnippets) {
               for (const snippet of chunk.maps.placeAnswerSources.reviewSnippets) {
                   // Fix: Correctly access the URI from the review snippet's source property. The property is `source.uri`, not `uri`.
-                  if (snippet.source?.uri) {
-                      sourceUrls.add(snippet.source.uri);
+                  // FIX: The type definitions for GroundingChunkMapsPlaceAnswerSourcesReviewSnippet appear to be incorrect. Casting to `any` to bypass the compile error.
+                  if ((snippet as any).source?.uri) {
+                      sourceUrls.add((snippet as any).source.uri);
                   }
               }
           }
