@@ -29,8 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!process.env.API_KEY) {
-        console.error("API_KEY environment variable is not set on the server.");
-        return res.status(500).json({ error: "Server configuration error: API key not found." });
+        console.error("CRITICAL: API_KEY environment variable is not set on the server.");
+        return res.status(500).json({ error: "Server configuration error: The API_KEY environment variable is not set. Please configure it in your hosting provider's settings." });
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -74,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.end();
 
   } catch (error) {
-    console.error("Error in /api/generate (stream):", error);
+    console.error("Error in /api/generate handler:", error);
     // If headers are already sent, we can't send a JSON error. Just end the stream.
     if (!res.headersSent) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";

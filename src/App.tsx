@@ -3,6 +3,15 @@ import type { Language } from './types';
 import Header from './components/Header';
 import Chatbot from './components/Chatbot';
 import SplashScreen from './components/SplashScreen';
+import { t } from './lib/i18n';
+
+const Footer: React.FC<{ language: Language }> = ({ language }) => (
+  <footer className="w-full text-center p-4">
+    <p className="text-xs text-stone-500 dark:text-stone-400">
+      {t('disclaimer', language)}
+    </p>
+  </footer>
+);
 
 const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('en');
@@ -35,6 +44,7 @@ const App: React.FC = () => {
           <main className="flex-grow flex flex-col items-center justify-center">
             <Chatbot language={language} />
           </main>
+          <Footer language={language} />
         </div>
       </div>
     </div>
