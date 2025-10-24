@@ -1,7 +1,5 @@
 {
   "name": "Cafegardee",
-  "description": "An application to discover cafes, restaurants, and a comprehensive reference for coffee, tea, and various hot and cold drink recipes, powered by a central chatbot.",
-  "requestFramePermissions": [
-    "geolocation"
-  ]
+  "description": "An application to discover cafes, restaurants, and a comprehensive reference for coffee, tea, and various hot and cold drink recipes.",
+  "requestFramePermissions": []
 }

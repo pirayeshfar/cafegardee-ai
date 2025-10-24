@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { Language } from './types';
 import Header from './components/Header';
-import Chatbot from './components/Chatbot';
 import SplashScreen from './components/SplashScreen';
-import { t } from './lib/i18n';
-
-const Footer: React.FC<{ language: Language }> = ({ language }) => (
-  <footer className="w-full text-center p-4">
-    <p className="text-xs text-stone-500 dark:text-stone-400">
-      {t('disclaimer', language)}
-    </p>
-  </footer>
-);
+import RecipeBrowser from './components/RecipeBrowser';
 
 const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('en');
@@ -37,14 +28,13 @@ const App: React.FC = () => {
       
       <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
         <div 
-          className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] dark:bg-stone-950">
+          className="absolute inset-0 -z-10 h-full w-full bg-stone-100 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] dark:bg-stone-950">
         </div>
         <div className="relative flex flex-col min-h-screen p-2 sm:p-4 md:p-6">
           <Header language={language} setLanguage={setLanguage} />
-          <main className="flex-grow flex flex-col items-center justify-center">
-            <Chatbot language={language} />
+          <main className="flex-grow flex flex-col items-center w-full px-4">
+            <RecipeBrowser language={language} />
           </main>
-          <Footer language={language} />
         </div>
       </div>
     </div>
