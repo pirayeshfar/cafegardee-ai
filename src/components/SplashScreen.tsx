@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 interface SplashScreenProps {
@@ -38,24 +39,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
           </span>
         ))}
       </h1>
-      
-      <style>
-        {`
-          @keyframes fade-in-up {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .animate-fade-in-up {
-            animation: fade-in-up 0.8s forwards ease-out;
-          }
-        `}
-      </style>
     </div>
   );
 };

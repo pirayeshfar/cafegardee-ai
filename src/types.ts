@@ -1,5 +1,14 @@
+
 export type Language = 'en' | 'fa';
 
+export interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'bot';
+  type?: 'text' | 'loading' | 'error';
+}
+
+// FIX: Added Recipe-related types that were missing.
 export type Category = 'coffee' | 'tea' | 'herbal';
 
 export interface RecipeContent {
