@@ -10,12 +10,14 @@ export const useTypingEffect = (fullText: string, speed: number = 30): string =>
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {
+    // If speed is 0 or no text, display immediately without effect
     if (speed === 0 || !fullText) {
       setDisplayedText(fullText || '');
       return;
     }
     
-    setDisplayedText(''); // Reset on new text
+    // Reset text when a new fullText is provided
+    setDisplayedText('');
     let i = 0;
     const intervalId = setInterval(() => {
       if (i < fullText.length) {
@@ -26,6 +28,7 @@ export const useTypingEffect = (fullText: string, speed: number = 30): string =>
       }
     }, speed);
 
+    // Cleanup on component unmount or when dependencies change
     return () => clearInterval(intervalId);
   }, [fullText, speed]);
 

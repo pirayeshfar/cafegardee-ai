@@ -15,8 +15,11 @@ export const useChat = (language: Language) => {
   const sendMessage = useCallback(async (text: string, location?: Location) => {
     if (isLoading || !text.trim()) return;
 
-    const userMessage: Message = { id: Date.now().toString(), text, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
+    // Don't show the user's location prompt message, just send it to the AI
+    if (!location) {
+        const userMessage: Message = { id: Date.now().toString(), text, sender: 'user' };
+        setMessages(prev => [...prev, userMessage]);
+    }
     setIsLoading(true);
 
     const loadingMessageId = (Date.now() + 1).toString();

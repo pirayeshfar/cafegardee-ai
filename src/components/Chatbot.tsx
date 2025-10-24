@@ -31,27 +31,27 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
       : 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-bl-none'
   }`;
   
-  // Custom renderer for marked to open links in a new tab
   const renderer = new marked.Renderer();
-  // FIX: Type error due to a mismatch between `marked` version and `@types/marked`. The type definitions expect a newer function signature. Casting to `any` bypasses the incorrect type checking for this assignment.
-  (renderer as any).link = (href: string, title: string | null, text: string) => `<a href="${href}" title="${title || ''}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  // Open links in a new tab
+  renderer.link = (href: string, title: string | null, text: string) => `<a href="${href}" title="${title || ''}" target="_blank" rel="noopener noreferrer">${text}</a>`;
   marked.setOptions({ renderer });
 
 
   const getRenderedHtml = () => {
     try {
-      const parsedText = isBot ? marked.parse(typedText) as string : typedText;
+      const textToRender = isUser ? message.text : typedText;
+      const parsedText = isBot ? marked.parse(textToRender) as string : textToRender;
       return parsedText;
     } catch (e) {
       console.error("Error parsing markdown:", e);
-      return typedText; // Fallback to plain text
+      return isUser ? message.text : typedText; // Fallback to plain text
     }
   };
 
   return (
-    <li className={containerClasses}>
+    <li className={containerClasses} aria-label={`Message from ${message.sender}`}>
         {!isUser && (
-            <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 me-2">
+            <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 me-2" aria-hidden="true">
                 G
             </div>
         )}
@@ -101,7 +101,15 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
       },
       (error) => {
         console.error("Geolocation error:", error);
-        sendMessage(t('locationError', language));
+        // Create a temporary error message to show in the chat
+        const errorMessage: Message = {
+            id: Date.now().toString(),
+            text: t('locationError', language),
+            sender: 'bot',
+            type: 'error',
+        };
+        // This is a way to inject a message without going through the hook's full flow
+        (messages as Message[]).push(errorMessage); 
         setIsFindingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -132,11 +140,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
       <ul 
         className="flex-1 overflow-y-auto p-4 sm:p-6"
         aria-live="polite"
+        role="log"
       >
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
         ))}
-         <li ref={messagesEndRef} />
+         <li ref={messagesEndRef} className="h-0" />
       </ul>
       <div className="border-t border-stone-200 dark:border-stone-800 p-4">
         {messages.length === 0 && (
@@ -158,6 +167,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
             placeholder={t('placeholder', language)}
             className="flex-1 w-full px-4 py-3 bg-stone-100 dark:bg-stone-800 rounded-full border border-stone-300 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
             disabled={isLoading}
+            aria-label={t('placeholder', language)}
           />
           <button
             type="submit"
