@@ -10,7 +10,6 @@ export const useTypingEffect = (fullText: string, speed: number = 30): string =>
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {
-    // If speed is 0 or no text, display the full text immediately
     if (speed === 0 || !fullText) {
       setDisplayedText(fullText || '');
       return;

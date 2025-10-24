@@ -30,8 +30,22 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
       ? 'bg-amber-500 text-white rounded-br-none'
       : 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-bl-none'
   }`;
+  
+  // Custom renderer for marked to open links in a new tab
+  const renderer = new marked.Renderer();
+  renderer.link = (href, title, text) => `<a href="${href}" title="${title}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  marked.setOptions({ renderer });
 
-  const renderedHtml = isReadyForTyping ? marked.parse(typedText) : typedText;
+
+  const getRenderedHtml = () => {
+    try {
+      const parsedText = isBot ? marked.parse(typedText) as string : typedText;
+      return parsedText;
+    } catch (e) {
+      console.error("Error parsing markdown:", e);
+      return typedText; // Fallback to plain text
+    }
+  };
 
   return (
     <li className={containerClasses}>
@@ -40,8 +54,8 @@ const ChatMessage: React.FC<{ message: Message }> = memo(({ message }) => {
                 G
             </div>
         )}
-      <div className={`${messageClasses} ${message.type === 'error' ? 'bg-red-500 text-white' : ''}`}>
-        {message.type === 'loading' ? <LoadingIndicator /> : <div dangerouslySetInnerHTML={{ __html: renderedHtml as string }} />}
+      <div className={`${messageClasses} ${message.type === 'error' ? 'bg-red-500 text-white prose-p:text-white prose-strong:text-white' : ''}`}>
+        {message.type === 'loading' ? <LoadingIndicator /> : <div dangerouslySetInnerHTML={{ __html: getRenderedHtml() }} />}
       </div>
     </li>
   );
@@ -68,6 +82,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!input.trim()) return;
     sendMessage(input);
     setInput('');
   };
@@ -79,7 +94,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const locationPrompt = `Find cafes and restaurants near me. My current location is latitude: ${latitude}, longitude: ${longitude}.`;
+        const locationPrompt = `${t('locationPromptPart1', language)} ${t('locationPromptLat', language)}: ${latitude}, ${t('locationPromptLng', language)}: ${longitude}.`;
         sendMessage(locationPrompt, { lat: latitude, lng: longitude });
         setIsFindingLocation(false);
       },
@@ -102,7 +117,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
              <div className="relative w-full">
                 <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-5 -translate-y-1/2 text-stone-400 rtl:left-auto rtl:right-5"></i>
                 <div
-                    className="w-full text-sm sm:text-base md:text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-shadow text-stone-500 text-left rtl:text-right"
+                    className="w-full text-sm sm:text-base md:text-lg px-14 py-4 bg-white dark:bg-stone-800 rounded-full shadow-lg border border-transparent hover:shadow-xl transition-shadow text-stone-500 text-left rtl:text-right"
                 >
                     {t('placeholder', language)}
                 </div>
@@ -145,6 +160,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ language }) => {
           />
           <button
             type="submit"
+            aria-label={t('send', language)}
             className="w-12 h-12 flex items-center justify-center bg-amber-500 text-white rounded-full hover:bg-amber-600 disabled:bg-stone-400 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
             disabled={isLoading || !input.trim()}
           >

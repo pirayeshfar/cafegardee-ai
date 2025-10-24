@@ -11,6 +11,9 @@ const translations = {
     locationError: 'Could not get your location. Please grant permission and try again.',
     errorMessage: 'Sorry, I had trouble connecting. Please try again.',
     send: 'Send',
+    locationPromptPart1: 'Find cafes and restaurants near me. My current location is',
+    locationPromptLat: 'latitude',
+    locationPromptLng: 'longitude',
   },
   fa: {
     appTitle: 'کافه گردی',
@@ -22,6 +25,9 @@ const translations = {
     locationError: 'موقعیت مکانی شما دریافت نشد. لطفا دسترسی را تایید کرده و دوباره تلاش کنید.',
     errorMessage: 'متاسفانه در اتصال مشکلی پیش آمد. لطفا دوباره تلاش کنید.',
     send: 'ارسال',
+    locationPromptPart1: 'کافه‌ها و رستوران‌های نزدیک من را پیدا کن. موقعیت فعلی من',
+    locationPromptLat: 'عرض جغرافیایی',
+    locationPromptLng: 'طول جغرافیایی',
   },
 };
 

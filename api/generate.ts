@@ -1,13 +1,13 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Content } from "@google/genai";
 
 type Language = 'en' | 'fa';
 type Location = { lat: number, lng: number };
 
 const getSystemInstruction = (lang: Language): string => {
     if (lang === 'fa') {
-        return "شما 'کافه گردی' هستید، یک دستیار هوش مصنوعی دوستانه و آگاه. هدف شما کمک به کاربران برای کشف کافه‌ها و رستوران‌ها و ارائه دستورالعمل‌های دقیق برای انواع قهوه، چای و سایر نوشیدنی‌ها است. همیشه با لحنی گرم و صمیمی پاسخ دهید. اگر کاربر در مورد مکان‌های نزدیک سوال کرد، از ابزار Google Maps برای ارائه پیشنهادات دقیق و مرتبط استفاده کنید. همیشه فقط به زبان فارسی پاسخ دهید.";
+        return "شما 'کافه گردی' هستید، یک دستیار هوش مصنوعی دوستانه و آگاه. هدف شما کمک به کاربران برای کشف کافه‌ها و رستوران‌ها و ارائه دستورالعمل‌های دقیق برای انواع قهوه، چای و سایر نوشیدنی‌ها است. همیشه با لحنی گرم و صمیمی پاسخ دهید. اگر کاربر در مورد مکان‌های نزدیک سوال کرد، از ابزار Google Maps برای ارائه پیشنهادات دقیق و مرتبط استفاده کنید. همیشه فقط به زبان فارسی پاسخ دهید و پاسخ‌ها را با فرمت Markdown ارائه دهید.";
     }
-    return "You are 'Cafegardee', a friendly and knowledgeable AI assistant. Your purpose is to help users discover cafes and restaurants, and to provide detailed recipes for a wide variety of coffees, teas, and other beverages. Always respond in a warm and inviting tone. If the user asks for nearby places, use the Google Maps tool to give accurate and relevant suggestions. Always respond only in English.";
+    return "You are 'Cafegardee', a friendly and knowledgeable AI assistant. Your purpose is to help users discover cafes and restaurants, and to provide detailed recipes for a wide variety of coffees, teas, and other beverages. Always respond in a warm and inviting tone. If the user asks for nearby places, use the Google Maps tool to give accurate and relevant suggestions. Always respond only in English and format your responses using Markdown.";
 };
 
 // This serverless function acts as a secure backend proxy to the Google Gemini API.
@@ -40,9 +40,11 @@ export default async function handler(request: Request) {
 
         const ai = new GoogleGenAI({ apiKey });
 
+        const contents: Content[] = [{ role: 'user', parts: [{ text: prompt }] }];
+
         const requestPayload: any = {
             model: 'gemini-2.5-flash',
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            contents: contents,
             config: {
                 systemInstruction: getSystemInstruction(lang),
             },
@@ -71,7 +73,7 @@ export default async function handler(request: Request) {
             const sources = groundingChunks
                 .flatMap((chunk: any) => chunk.maps ? [{ title: chunk.maps.title, uri: chunk.maps.uri }] : [])
                 .filter((source: any, index: number, self: any[]) => 
-                    source.uri && index === self.findIndex((s) => s.uri === source.uri)
+                    source.uri && index === self.findIndex((s: any) => s.uri === source.uri)
                 );
         
             if (sources.length > 0) {
@@ -80,7 +82,6 @@ export default async function handler(request: Request) {
                 text = text + sourcesHeader + '\n' + sourcesList;
             }
         }
-
 
         // Provide a fallback if the response is empty
         if (typeof text !== 'string' || text.trim() === '') {
