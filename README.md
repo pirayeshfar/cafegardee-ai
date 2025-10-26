@@ -1,7 +1,3 @@
-<div align="center">
-  <img width="1200" height="475" alt="Cafegardee Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # Cafégardee AI Chat ☕️
 
 Welcome to **Cafégardee AI Chat**, an innovative and bilingual web application designed to guide users through the world of flavors! This AI-powered chatbot helps you discover cafes, restaurants, and beverage recipes with ease, offering a seamless and modern user experience. Whether you're a coffee enthusiast or a casual explorer, Cafégardee is your go-to platform for personalized recommendations.
@@ -53,11 +49,11 @@ This is a client-side application built with **React** and **TypeScript**, desig
   ```bash
   VITE_GEMINI_API_KEY=your-gemini-api-key-here
   VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
-
+```
 4. **Run the app:**:
   ```bash
   npm run dev
-
+```
    * Open http://localhost:5173 in your browser to view the app.
 ## Contributing
 Contributions are welcome! Feel free to open an issue or submit a pull request for new features, bug fixes, or recipe suggestions. Please follow the Contributing Guidelines for a smooth collaboration.
@@ -67,6 +63,6 @@ This project is licensed under the MIT License.
 
 ## Contact
 Ideated, designed, and developed by Amir Saman Pirayeshfar. Connect with me:
-* https://t.me/pirayeshfar
-* https://www.instagram.com/pirayeshfar/
-  
+
+* [Telegram](https://t.me/pirayeshfar)
+* [Instagram](https://www.instagram.com/pirayeshfar/)
