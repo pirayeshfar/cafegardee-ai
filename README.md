@@ -1,26 +1,72 @@
+<div align="center">
+  <img width="1200" height="475" alt="Cafegardee Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
 # Cafégardee AI Chat ☕️
 
-Welcome to Cafégardee, your personal AI guide to the world of flavors! This application is a beautifully designed, bilingual chatbot that helps users discover cafes, restaurants, and recipes.
+Welcome to **Cafégardee AI Chat**, an innovative and bilingual web application designed to guide users through the world of flavors! This AI-powered chatbot helps you discover cafes, restaurants, and beverage recipes with ease, offering a seamless and modern user experience. Whether you're a coffee enthusiast or a casual explorer, Cafégardee is your go-to platform for personalized recommendations.
 
-## ✨ Features
+**Ideated, designed, and developed by Amir Saman Pirayeshfar.**
 
-- **🤖 AI-Powered Chat:** Ask for cafe or restaurant recommendations, or even drink recipes.
-- **🌍 Bilingual Support:** The entire UI is available in both **English** and **Persian (Farsi)**, with an easy-to-use language switcher.
-- **📍 Location-Aware:** Can find places near you using your device's location.
-- **🎨 Responsive & Modern UI:** Built with Tailwind CSS, the interface is clean, responsive, and works beautifully on all devices, featuring a dark mode.
-- **🚀 Powered by Gemini:** Utilizes the Google Gemini API for intelligent and helpful responses, with Google Maps grounding for location-based queries.
+🔗 **Live Demo**: [View the app in AI Studio](https://ai.studio/apps/drive/1xjXJblK8wGQKrohFyJ3VU7TRD0zEVhZY)
 
-## 🛠 Tech Stack
+## Features
+- **AI-Powered Chatbot**: Ask for cafe/restaurant recommendations or explore coffee, tea, and herbal infusion recipes with intelligent responses powered by the Google Gemini API.
+- **Bilingual Interface**: Seamlessly switch between **English** and **Persian (Farsi)** for a fully localized experience.
+- **Location-Aware Recommendations**: Find nearby cafes and restaurants using device location integration with Google Maps grounding.
+- **Modern & Responsive Design**: Built with **Tailwind CSS**, featuring a clean UI, dark mode, and compatibility across desktop and mobile devices.
+- **Fast & Lightweight**: Optimized for performance with a client-side React architecture.
 
-- **Frontend:** [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/)
-- **AI:** [@google/genai](https://www.npmjs.com/package/@google/genai) for the Gemini API
+## Tech Stack
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **AI Integration**: Google Gemini API (@google/genai)
+- **Location Services**: Google Maps API for location-based queries
+- **Build Tool**: Vite
+- **Deployment**: AI Studio hosting
 
-## 🏗️ Project Architecture
+## Project Architecture
+This is a client-side application built with **React** and **TypeScript**, designed for scalability and maintainability:
+- **`src/`**: Contains the core React application code.
+- **`src/components/Chatbot.tsx`**: The main component handling the chat interface.
+- **`src/services/geminiService.ts`**: Logic for interacting with the Gemini API.
+- **`src/hooks/useChat.ts`**: Custom hook for managing chat state and interactions.
+- **`src/lib/`**: Utility functions and configurations.
+- **Other Files**: Configuration files like `vite.config.ts`, `tsconfig.json`, and `vercel.json` ensure smooth development and deployment.
 
-This is a **client-side application** built with React. It communicates directly with the Google Gemini API to provide chat functionality.
+## Run Locally
 
--   **`src/`**: Contains all the client-side React application code.
--   **`src/components/Chatbot.tsx`**: The main component that handles the chat interface.
--   **`src/services/geminiService.ts`**: Contains the logic for interacting with the Gemini API.
--   **`src/hooks/useChat.ts`**: A custom hook to manage the chat state and logic.
+### Prerequisites
+- **Node.js** (v16 or higher)
+- A valid **Gemini API key** (for AI functionality)
+- A **Google Maps API key** (for location-based features)
+
+### Installation Steps
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/pirayeshfar/cafegardee-ai.git
+2. **Install dependencies:**:
+   ```bash
+   npm install
+3. **Set up environment variables:**:
+  * Create a .env.local file in the root directory.
+  * Add your API keys:
+  ```bash
+  VITE_GEMINI_API_KEY=your-gemini-api-key-here
+  VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
+
+4. **Run the app:**:
+  ```bash
+  npm run dev
+
+   * Open http://localhost:5173 in your browser to view the app.
+## Contributing
+Contributions are welcome! Feel free to open an issue or submit a pull request for new features, bug fixes, or recipe suggestions. Please follow the Contributing Guidelines for a smooth collaboration.
+
+## License
+This project is licensed under the MIT License.
+
+## Contact
+Ideated, designed, and developed by Amir Saman Pirayeshfar. Connect with me:
+* https://t.me/pirayeshfar
+* https://www.instagram.com/pirayeshfar/
+  
